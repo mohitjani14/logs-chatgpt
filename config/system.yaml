@@ -1,0 +1,5 @@
+queueCapacity: 500
+workerThreads: 12
+downloadDirectory: downloads
+auditFile: logs/audit/audit.log
+downloadTimeoutSeconds: 300

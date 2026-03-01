@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Log Retrieval Platform</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="gradient-bg">
+<div class="container">
+    <header class="glass header-row">
+        <div>
+            <h1>🌈 Log Retrieval Platform</h1>
+            <p>Queue-based secure multi-server log downloads</p>
+        </div>
+        <div class="actions">
+            <a class="btn secondary" href="/admin">Admin Panel</a>
+            <form th:action="@{/logout}" method="post"><button class="btn">Logout</button></form>
+        </div>
+    </header>
+
+    <section class="card">
+        <h2>New Download Request</h2>
+        <form class="grid-2" th:action="@{/download}" method="post" th:object="${request}">
+            <label>Project <input th:field="*{project}" placeholder="ABC"/></label>
+            <label>Environment <input th:field="*{environment}" placeholder="UAT"/></label>
+            <label>Module <input th:field="*{module}" placeholder="PAYMENT"/></label>
+            <label>Server <input th:field="*{server}" placeholder="s1"/></label>
+            <label>From <input type="date" th:field="*{from}"/></label>
+            <label>To <input type="date" th:field="*{to}"/></label>
+            <div class="full"><button class="btn" type="submit">Start Download Job</button></div>
+        </form>
+        <div th:if="${jobId}" class="notice">Job queued: <strong id="jobId" th:text="${jobId}"></strong></div>
+    </section>
+
+    <section class="card">
+        <h2>My Jobs</h2>
+        <table>
+            <thead><tr><th>Job</th><th>Target</th><th>Status</th><th>Progress</th><th>Action</th></tr></thead>
+            <tbody id="jobsBody">
+            <tr th:each="job : ${jobs}">
+                <td th:text="${job.id}"></td>
+                <td><span th:text="${job.project}"></span>/<span th:text="${job.environment}"></span>/<span th:text="${job.module}"></span>/<span th:text="${job.server}"></span></td>
+                <td th:text="${job.status}"></td>
+                <td>
+                    <div class="progress"><span th:style="'width:' + ${job.progress} + '%'" th:text="${job.progress} + '%'">0%</span></div>
+                </td>
+                <td>
+                    <a class="btn tiny" th:if="${job.status.name() == 'COMPLETED' || job.status.name() == 'DOWNLOADED'}" th:href="@{'/api/download/' + ${job.id}}">Download</a>
+                    <button class="btn tiny warn" type="button" th:if="${job.status.name() == 'QUEUED' || job.status.name() == 'PROCESSING'}" th:attr="data-job=${job.id}" onclick="cancelJob(this.dataset.job)">Cancel</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</div>
+<script th:src="@{/js/job-status.js}"></script>
+</body>
+</html>

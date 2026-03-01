@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Admin Control Center</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="gradient-bg">
+<div class="container">
+    <header class="glass header-row">
+        <div>
+            <h1>🛠️ Admin Control Center</h1>
+            <p>Manage projects, servers, users, queue, and audit trails</p>
+        </div>
+        <div class="actions">
+            <a class="btn secondary" href="/">User View</a>
+            <form th:action="@{/logout}" method="post"><button class="btn">Logout</button></form>
+        </div>
+    </header>
+
+    <p th:if="${message}" class="notice" th:text="${message}"></p>
+
+    <section class="grid-3">
+        <article class="card"><h3>Projects</h3><p th:text="${#lists.size(projects)} + ' configured'"></p></article>
+        <article class="card"><h3>Users</h3><p th:text="${#lists.size(users)} + ' accounts'"></p></article>
+        <article class="card"><h3>Jobs</h3><p th:text="${#lists.size(jobs)} + ' total jobs'"></p></article>
+    </section>
+
+    <section class="card">
+        <h2>Configuration Management</h2>
+        <div class="grid-2">
+            <form th:action="@{/admin/project}" method="post"><h4>Add Project</h4><input name="name" placeholder="ABC"/><button class="btn">Add</button></form>
+            <form th:action="@{/admin/environment}" method="post"><h4>Add Environment</h4><input name="project" placeholder="ABC"/><input name="environment" placeholder="QA/UAT/PROD"/><button class="btn">Add</button></form>
+            <form th:action="@{/admin/module}" method="post"><h4>Add Module</h4><input name="project" placeholder="ABC"/><input name="environment" placeholder="UAT"/><input name="module" placeholder="PAYMENT"/><button class="btn">Add</button></form>
+            <form th:action="@{/admin/server}" method="post"><h4>Add/Update Server</h4><input name="project" placeholder="ABC"/><input name="environment" placeholder="UAT"/><input name="module" placeholder="PAYMENT"/><input name="serverName" placeholder="s1"/><input name="host" placeholder="10.0.0.10"/><input name="port" value="22"/><input name="username" placeholder="ssh-user"/><input name="logDirectory" placeholder="/var/log/app"/><input name="logPattern" value="*.log"/><button class="btn">Save Server</button></form>
+        </div>
+    </section>
+
+    <section class="card grid-2">
+        <form th:action="@{/admin/user}" method="post"><h2>User Management</h2><input name="username" placeholder="new-user"/><input name="password" placeholder="temporary password"/><select name="role"><option>USER</option><option>ADMIN</option></select><button class="btn">Add/Update User</button></form>
+        <form th:action="@{/admin/system}" method="post"><h2>System Tuning</h2><input name="workerThreads" th:value="${system.workerThreads}"/><input name="queueCapacity" th:value="${system.queueCapacity}"/><input name="downloadDirectory" th:value="${system.downloadDirectory}"/><input name="downloadTimeoutSeconds" th:value="${system.downloadTimeoutSeconds}"/><button class="btn">Update Settings</button></form>
+    </section>
+
+    <section class="card">
+        <h2>Temporary Admin Password</h2>
+        <form th:action="@{/admin/reset-temp-password}" method="post" class="inline">
+            <input name="temporaryPassword" value="TempAdmin@123"/>
+            <button class="btn warn">Reset Temporary Admin Password</button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Audit Search</h2>
+        <div class="inline"><input id="q" placeholder="search by user/project/server"/><button class="btn" onclick="searchAudit()" type="button">Search</button></div>
+        <pre id="results" class="audit-box"></pre>
+    </section>
+
+    <section class="card">
+        <h2>Active Jobs Dashboard</h2>
+        <button class="btn secondary" type="button" onclick="refreshJobs()">Refresh</button>
+        <div id="jobs"></div>
+    </section>
+</div>
+<script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+:root{--bg1:#1e1b4b;--bg2:#0f766e;--card:#ffffff;--text:#0f172a;--muted:#475569;--accent:#7c3aed;--accent2:#0891b2;--warn:#dc2626}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text)}
+.gradient-bg{background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;padding:24px}
+.container{max-width:1200px;margin:0 auto;display:grid;gap:18px}
+.glass{background:rgba(255,255,255,.18);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.24);color:#fff}
+.header-row{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-radius:16px}
+.actions{display:flex;gap:10px;align-items:center}
+.card{background:var(--card);border-radius:16px;padding:18px;box-shadow:0 10px 24px rgba(15,23,42,.18)}
+h1,h2,h3,h4,p{margin:0 0 10px}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.full{grid-column:1/-1}
+label{display:grid;gap:6px;font-weight:600;font-size:14px}
+input,select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:10px}
+.btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:10px;padding:10px 14px;cursor:pointer;text-decoration:none;display:inline-block}
+.btn.secondary{background:#334155}
+.btn.warn{background:var(--warn)}
+.btn.tiny{padding:6px 8px;font-size:12px}
+.notice{background:#dbeafe;color:#1e3a8a;padding:10px;border-radius:10px}
+.inline{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left;font-size:14px}
+.progress{background:#e2e8f0;border-radius:999px;overflow:hidden;min-width:120px}
+.progress span{display:block;background:linear-gradient(90deg,#22c55e,#0ea5e9);color:#fff;font-size:11px;padding:3px 6px;white-space:nowrap}
+.audit-box{max-height:220px;overflow:auto;background:#0f172a;color:#d1fae5;border-radius:12px;padding:12px}
+#jobs .job{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed #cbd5e1}
+@media (max-width:860px){.grid-2,.grid-3{grid-template-columns:1fr}.header-row{flex-direction:column;align-items:flex-start;gap:10px}}
