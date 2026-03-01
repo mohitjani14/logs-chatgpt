@@ -1,0 +1,16 @@
+projects:
+  - name: ABC
+    environments:
+      - name: UAT
+        modules:
+          - name: PAYMENT
+            servers:
+              - name: s1
+                host: localhost
+                port: 22
+                username: demo
+                passwordEncrypted: ENC(dummy)
+                privateKeyPath: ""
+                logDirectory: sample-logs
+                logPattern: "*.log"
+                rotationSupported: true
