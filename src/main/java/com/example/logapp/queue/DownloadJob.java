@@ -20,6 +20,8 @@ public class DownloadJob {
     private volatile JobStatus status = JobStatus.QUEUED;
     private volatile String error;
     private volatile Path zipPath;
+    private volatile int progress = 0;
+    private volatile boolean cancelRequested = false;
 
     public DownloadJob(String username, String project, String environment, String module, String server, LocalDate from, LocalDate to) {
         this.username = username;
@@ -46,4 +48,8 @@ public class DownloadJob {
     public void setError(String error) { this.error = error; }
     public Path getZipPath() { return zipPath; }
     public void setZipPath(Path zipPath) { this.zipPath = zipPath; }
+    public int getProgress() { return progress; }
+    public void setProgress(int progress) { this.progress = progress; }
+    public boolean isCancelRequested() { return cancelRequested; }
+    public void setCancelRequested(boolean cancelRequested) { this.cancelRequested = cancelRequested; }
 }

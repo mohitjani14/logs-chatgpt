@@ -1,7 +1,7 @@
 users:
   - username: admin
-    passwordHash: "$2a$10$6fN8DqzlUbQfQ61WQ9r9xus8Ok2acIP4R2f8rQhI4QjCGQ2a5XJ6e"
+    passwordHash: "{noop}TempAdmin@123"
     role: ADMIN
   - username: user1
-    passwordHash: "$2a$10$6fN8DqzlUbQfQ61WQ9r9xus8Ok2acIP4R2f8rQhI4QjCGQ2a5XJ6e"
+    passwordHash: "{bcrypt}$2a$10$6fN8DqzlUbQfQ61WQ9r9xus8Ok2acIP4R2f8rQhI4QjCGQ2a5XJ6e"
     role: USER

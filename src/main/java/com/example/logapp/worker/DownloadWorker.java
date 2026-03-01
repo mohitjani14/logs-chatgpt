@@ -31,7 +31,12 @@ public class DownloadWorker {
     }
 
     public void process(DownloadJob job) {
+        if (job.isCancelRequested()) {
+            job.setStatus(JobStatus.CANCELLED);
+            return;
+        }
         job.setStatus(JobStatus.PROCESSING);
+        job.setProgress(10);
         Instant start = Instant.now();
         String dateRange = job.getFrom() + ".." + job.getTo();
 
@@ -42,12 +47,19 @@ public class DownloadWorker {
             IOException last = null;
             for (int i = 1; i <= RETRIES; i++) {
                 try {
+                    if (job.isCancelRequested()) {
+                        job.setStatus(JobStatus.CANCELLED);
+                        cleanup(job);
+                        return;
+                    }
                     Path jobDir = Path.of(configStore.getSystemSettings().getDownloadDirectory(), job.getId());
                     Files.createDirectories(jobDir);
                     List<Path> files = sftpDownloadClient.downloadLogs(serverConfig, job.getFrom(), job.getTo(), jobDir);
+                    job.setProgress(70);
                     Path zipPath = jobDir.resolve("logs.zip");
                     ZipUtil.zipFiles(files, zipPath);
                     job.setZipPath(zipPath);
+                    job.setProgress(100);
                     job.setStatus(JobStatus.COMPLETED);
                     auditService.log(job.getUsername(), "DOWNLOAD", job.getProject(), job.getModule(), job.getServer(), dateRange, "SUCCESS", "N/A");
                     return;
@@ -77,7 +89,10 @@ public class DownloadWorker {
             if (Files.exists(dir)) {
                 try (var stream = Files.walk(dir)) {
                     stream.sorted((a, b) -> b.compareTo(a)).forEach(path -> {
-                        try { Files.deleteIfExists(path); } catch (IOException ignored) {}
+                        try {
+                            Files.deleteIfExists(path);
+                        } catch (IOException ignored) {
+                        }
                     });
                 }
             }

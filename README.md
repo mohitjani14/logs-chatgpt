@@ -2,14 +2,15 @@
 
 ## Features
 - Multi-project hierarchy: Project -> Environment -> Module -> Server -> Logs
+- Modern colorful UI for end users and a dedicated admin control center
 - Async queue (`BlockingQueue`) + worker thread pool (`ExecutorService`)
+- Download progress, cancel support, and status polling
 - SFTP download client abstraction (current demo implementation supports localhost file copy)
 - Retry (3 attempts), timeout, cleanup for partial downloads
-- Audit logging in `logs/audit/audit.log`
+- Audit logging in `logs/audit/audit.log` with searchable admin view
 - File-based config in `/config` (no database)
-- Admin/User role security with Spring Security + BCrypt
-- UI for requesting downloads and audit search
-- CLI for admin config updates
+- Admin/User role security with Spring Security + BCrypt/Delegating encoder
+- CLI for project/environment/module/server/user configuration
 - Health endpoint via Spring Boot Actuator
 
 ## Architecture
@@ -29,7 +30,7 @@
 mvn spring-boot:run
 ```
 
-Login users are in `config/users.yaml`.
+Login users are in `config/users.yaml`. Temporary admin credentials for bootstrap: `admin / TempAdmin@123` (change immediately).
 
 ## Build jar
 ```bash
@@ -40,7 +41,11 @@ java -jar target/logapp-1.0.0.jar
 ## CLI examples
 ```bash
 java -jar target/logapp-1.0.0.jar add-project ABC
+java -jar target/logapp-1.0.0.jar add-environment ABC UAT
+java -jar target/logapp-1.0.0.jar add-module ABC UAT PAYMENT
+java -jar target/logapp-1.0.0.jar add-server ABC UAT PAYMENT s1 localhost 22 demo sample-logs "*.log"
 java -jar target/logapp-1.0.0.jar add-user alice Str0ngPass USER
+java -jar target/logapp-1.0.0.jar set-temp-admin-password TempAdmin@123
 java -jar target/logapp-1.0.0.jar reload-config
 ```
 

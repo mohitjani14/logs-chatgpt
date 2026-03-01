@@ -1,5 +1,6 @@
 package com.example.logapp.config;
 
+import com.example.logapp.model.Role;
 import com.example.logapp.util.CryptoUtil;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -85,8 +86,73 @@ public class FileConfigStore {
     public void addProject(String projectName) throws IOException {
         lock.writeLock().lock();
         try {
-            projectsFile.getProjects().add(newProject(projectName));
+            ProjectConfig project = findProject(projectName).orElseGet(() -> {
+                ProjectConfig p = new ProjectConfig();
+                p.setName(projectName);
+                projectsFile.getProjects().add(p);
+                return p;
+            });
+            project.setName(projectName);
             writeYamlWithBackup("projects.yaml", projectsFile);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public void addEnvironment(String projectName, String environmentName) throws IOException {
+        lock.writeLock().lock();
+        try {
+            ProjectConfig project = findProject(projectName).orElseThrow(() -> new IllegalArgumentException("Project not found"));
+            boolean exists = project.getEnvironments().stream().anyMatch(e -> e.getName().equalsIgnoreCase(environmentName));
+            if (!exists) {
+                EnvironmentConfig env = new EnvironmentConfig();
+                env.setName(environmentName);
+                project.getEnvironments().add(env);
+                writeYamlWithBackup("projects.yaml", projectsFile);
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public void addModule(String projectName, String environmentName, String moduleName) throws IOException {
+        lock.writeLock().lock();
+        try {
+            EnvironmentConfig env = findEnvironment(projectName, environmentName)
+                    .orElseThrow(() -> new IllegalArgumentException("Environment not found"));
+            boolean exists = env.getModules().stream().anyMatch(m -> m.getName().equalsIgnoreCase(moduleName));
+            if (!exists) {
+                ModuleConfig module = new ModuleConfig();
+                module.setName(moduleName);
+                env.getModules().add(module);
+                writeYamlWithBackup("projects.yaml", projectsFile);
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public void addServer(String projectName, String environmentName, String moduleName, ServerConfig serverConfig) throws IOException {
+        lock.writeLock().lock();
+        try {
+            ModuleConfig module = findModule(projectName, environmentName, moduleName)
+                    .orElseThrow(() -> new IllegalArgumentException("Module not found"));
+            module.getServers().removeIf(s -> s.getName().equalsIgnoreCase(serverConfig.getName()));
+            module.getServers().add(serverConfig);
+            writeYamlWithBackup("projects.yaml", projectsFile);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public void updateSystemSettings(int workerThreads, int queueCapacity, String downloadDirectory, int timeoutSeconds) throws IOException {
+        lock.writeLock().lock();
+        try {
+            systemSettings.setWorkerThreads(workerThreads);
+            systemSettings.setQueueCapacity(queueCapacity);
+            systemSettings.setDownloadDirectory(downloadDirectory);
+            systemSettings.setDownloadTimeoutSeconds(timeoutSeconds);
+            writeYamlWithBackup("system.yaml", systemSettings);
         } finally {
             lock.writeLock().unlock();
         }
@@ -95,11 +161,33 @@ public class FileConfigStore {
     public void addUser(String username, String rawPassword, String role) throws IOException {
         lock.writeLock().lock();
         try {
+            usersFile.getUsers().removeIf(u -> u.getUsername().equalsIgnoreCase(username));
             UserRecord userRecord = new UserRecord();
             userRecord.setUsername(username);
-            userRecord.setPasswordHash(CryptoUtil.bcrypt(rawPassword));
-            userRecord.setRole(Enum.valueOf(com.example.logapp.model.Role.class, role.toUpperCase()));
+            userRecord.setPasswordHash("{bcrypt}" + CryptoUtil.bcrypt(rawPassword));
+            userRecord.setRole(Role.valueOf(role.toUpperCase()));
             usersFile.getUsers().add(userRecord);
+            writeYamlWithBackup("users.yaml", usersFile);
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public void resetTemporaryAdminPassword(String temporaryPassword) throws IOException {
+        lock.writeLock().lock();
+        try {
+            UserRecord admin = usersFile.getUsers().stream()
+                    .filter(u -> u.getUsername().equalsIgnoreCase("admin"))
+                    .findFirst()
+                    .orElseGet(() -> {
+                        UserRecord user = new UserRecord();
+                        user.setUsername("admin");
+                        user.setRole(Role.ADMIN);
+                        usersFile.getUsers().add(user);
+                        return user;
+                    });
+            admin.setPasswordHash("{noop}" + temporaryPassword);
+            admin.setRole(Role.ADMIN);
             writeYamlWithBackup("users.yaml", usersFile);
         } finally {
             lock.writeLock().unlock();
@@ -118,10 +206,22 @@ public class FileConfigStore {
                 .findFirst();
     }
 
-    private ProjectConfig newProject(String name) {
-        ProjectConfig projectConfig = new ProjectConfig();
-        projectConfig.setName(name);
-        return projectConfig;
+    private Optional<ProjectConfig> findProject(String project) {
+        return projectsFile.getProjects().stream().filter(p -> p.getName().equalsIgnoreCase(project)).findFirst();
+    }
+
+    private Optional<EnvironmentConfig> findEnvironment(String project, String environment) {
+        return findProject(project).stream()
+                .flatMap(p -> p.getEnvironments().stream())
+                .filter(e -> e.getName().equalsIgnoreCase(environment))
+                .findFirst();
+    }
+
+    private Optional<ModuleConfig> findModule(String project, String environment, String moduleName) {
+        return findEnvironment(project, environment).stream()
+                .flatMap(e -> e.getModules().stream())
+                .filter(m -> m.getName().equalsIgnoreCase(moduleName))
+                .findFirst();
     }
 
     private <T> T readYaml(String fileName, Class<T> type, T defaultValue) throws IOException {
