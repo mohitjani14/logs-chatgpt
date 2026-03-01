@@ -1,0 +1,6 @@
+target/
+.idea/
+*.iml
+downloads/
+logs/
+config/*.bak

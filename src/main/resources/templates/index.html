@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Log Retrieval</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<h2>Centralized Log Retrieval</h2>
+<form th:action="@{/download}" method="post" th:object="${request}">
+    <label>Project</label><input th:field="*{project}" placeholder="ABC"/><br/>
+    <label>Environment</label><input th:field="*{environment}" placeholder="UAT"/><br/>
+    <label>Module</label><input th:field="*{module}" placeholder="PAYMENT"/><br/>
+    <label>Server</label><input th:field="*{server}" placeholder="s1"/><br/>
+    <label>From</label><input type="date" th:field="*{from}"/><br/>
+    <label>To</label><input type="date" th:field="*{to}"/><br/>
+    <button type="submit">Download</button>
+</form>
+
+<div th:if="${jobId}">
+    <p>Processing job <span id="jobId" th:text="${jobId}"></span>...</p>
+    <p id="status"></p>
+</div>
+
+<script th:src="@{/js/job-status.js}"></script>
+</body>
+</html>

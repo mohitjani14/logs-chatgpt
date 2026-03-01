@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>Admin</title></head>
+<body>
+<h3>Admin Dashboard</h3>
+<p>Projects: <span th:text="${#lists.size(projects)}"></span></p>
+<p>Users: <span th:text="${#lists.size(users)}"></span></p>
+<div>
+    <h4>Audit Search</h4>
+    <input id="q" placeholder="john"/>
+    <button onclick="searchAudit()">Search</button>
+    <pre id="results"></pre>
+</div>
+<script>
+async function searchAudit(){
+  const q = document.getElementById('q').value;
+  const r = await fetch('/api/admin/audit?q=' + encodeURIComponent(q));
+  const data = await r.json();
+  document.getElementById('results').textContent = data.join('\n');
+}
+</script>
+</body>
+</html>
